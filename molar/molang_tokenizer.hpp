@@ -28,6 +28,10 @@ namespace molar {
 
         void print_tokens(const std::vector<Token> &tokens, bool pretty, std::ostream &location) const;
 
+        [[nodiscard]] molar_impl::SourceBuffer move_buffer() {
+            return std::move(this->buffer);
+        }
+
     private:
         std::optional<Token> parse_identifier();
 

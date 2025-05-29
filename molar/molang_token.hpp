@@ -4,7 +4,7 @@
 
 #ifndef MOLANG_TOKEN_HPP
 #define MOLANG_TOKEN_HPP
-#include <assert.h>
+#include <cassert>
 #include <cstdint>
 #include <string>
 #include <array>
@@ -160,6 +160,84 @@ namespace molar {
         Return,
     };
 
+    enum class BinaryOp : uint8_t {
+        /// `==`
+        Equality = TokenType::Eq,
+        /// `!=`
+        Inequality = TokenType::NotEq,
+        /// `<`
+        LessThan = TokenType::Lt,
+        /// `<=`
+        LessEqualThan = TokenType::LtEq,
+        /// `>`
+        GreaterThan = TokenType::Gt,
+        /// `>=`
+        GreaterEqualThan = TokenType::GtEq,
+        /// `+`
+        Addition = TokenType::Plus,
+        /// `-`
+        Subtraction = TokenType::Minus,
+        /// `*`
+        Multiplication = TokenType::Star,
+        /// `/`
+        Division = TokenType::Slash,
+        /// `||`
+        Or = TokenType::Or,
+        /// `&&`
+        And = TokenType::And,
+        /// `??`
+        Coalesce = TokenType::NullCoal,
+    };
+
+    enum class UnaryOp : uint8_t {
+        Negate = TokenType::Minus,
+        Not = TokenType::Not,
+    };
+
+    enum class CallType : uint8_t {
+        Math = TokenType::Math,
+        Query = TokenType::Query,
+    };
+
+    enum class ResourceKind : uint8_t {
+        Geometry = TokenType::Geometry,
+        Material = TokenType::Material,
+        Texture = TokenType::Texture,
+    };
+
+    std::optional<std::pair<uint8_t, uint8_t> > token_bind_power(TokenType type);
+
+
+    constexpr auto tokens_which_could_be_names = std::array{
+        TokenType::Math,
+        TokenType::Query,
+        TokenType::Variable,
+        TokenType::Geometry,
+        TokenType::Material,
+        TokenType::Texture,
+        TokenType::Array,
+        TokenType::True,
+        TokenType::False,
+        TokenType::This,
+        TokenType::Break,
+        TokenType::Continue,
+        TokenType::ForEach,
+        TokenType::Loop,
+        TokenType::Return,
+        TokenType::Temporary,
+        TokenType::Context,
+        TokenType::Eq,
+        TokenType::NotEq,
+        TokenType::LtEq,
+        TokenType::GtEq,
+        TokenType::Or,
+        TokenType::And,
+        TokenType::Arrow,
+        TokenType::NullCoal,
+        TokenType::Identifier,
+    };
+
+
     struct Token {
         size_t size{1};
         TokenType type{};
@@ -180,7 +258,7 @@ namespace molar {
         ) : size(size), type(type), position(position) {
         }
 
-        explicit Token(const TokenType type) : type(type), position(-1) {
+        constexpr explicit Token(const TokenType type) : type(type), position(-1) {
         }
 
         bool operator==(const Token &other) const {
@@ -199,6 +277,9 @@ namespace molar {
             return !(*this == other);
         }
 
+
+        // TODO: Make this a debug only function, else just make it do nothing so it gets removed in release
+
         template<size_t N>
         void assert_type(const std::array<TokenType, N> &types) const {
             for (const auto typ: types) {
@@ -207,6 +288,16 @@ namespace molar {
                 }
             }
             assert(false);
+        }
+
+        template<size_t N>
+        bool check_types(const std::array<TokenType, N> &types) const {
+            for (const auto typ: types) {
+                if (*this == typ) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         void assert_type(const TokenType type) const {
@@ -220,118 +311,9 @@ namespace molar {
     using TokenBuffer = molar_impl::SpanBuffer<std::vector<Token> >;
 
 
-    inline std::string to_string(const TokenType type) {
-        switch (type) {
-            case TokenType::Eof: return "Eof";
-            case TokenType::Number: return "Number";
-            case TokenType::LeftParen: return "LeftParen";
-            case TokenType::RightParen: return "RightParen";
-            case TokenType::LeftBrace: return "LeftBrace";
-            case TokenType::RightBrace: return "RightBrace";
-            case TokenType::LeftBracket: return "LeftBracket";
-            case TokenType::RightBracket: return "RightBracket";
-            case TokenType::Assign: return "Assign";
-            case TokenType::Not: return "Not";
-            case TokenType::Eq: return "Eq";
-            case TokenType::NotEq: return "NotEq";
-            case TokenType::Lt: return "Lt";
-            case TokenType::Gt: return "Gt";
-            case TokenType::LtEq: return "LtEq";
-            case TokenType::GtEq: return "GtEq";
-            case TokenType::Or: return "Or";
-            case TokenType::And: return "And";
-            case TokenType::Arrow: return "Arrow";
-            case TokenType::Dot: return "Dot";
-            case TokenType::Conditional: return "Conditional";
-            case TokenType::NullCoal: return "NullCoal";
-            case TokenType::Colon: return "Colon";
-            case TokenType::Semi: return "Semi";
-            case TokenType::Comma: return "Comma";
-            case TokenType::Minus: return "Minus";
-            case TokenType::Plus: return "Plus";
-            case TokenType::Star: return "Star";
-            case TokenType::Slash: return "Slash";
-            case TokenType::Temporary: return "Temporary";
-            case TokenType::Variable: return "Variable";
-            case TokenType::Context: return "Context";
-            case TokenType::Math: return "Math";
-            case TokenType::Query: return "Query";
-            case TokenType::Geometry: return "Geometry";
-            case TokenType::Material: return "Material";
-            case TokenType::Texture: return "Texture";
-            case TokenType::Array: return "Array";
-            case TokenType::True: return "True";
-            case TokenType::False: return "False";
-            case TokenType::This: return "This";
-            case TokenType::Break: return "Break";
-            case TokenType::Continue: return "Continue";
-            case TokenType::ForEach: return "ForEach";
-            case TokenType::Loop: return "Loop";
-            case TokenType::Return: return "Return";
-            case TokenType::Identifier: return "Identifier";
-            case TokenType::String: return "String";
-            default: return "Unknown";
-        }
-    }
+    std::string to_string(TokenType type);
 
-    inline std::string to_symbol_string(TokenType type) {
-        switch (type) {
-            case TokenType::Eof: return "<eof>";
-            case TokenType::Number: return "number";
-            case TokenType::LeftParen: return "(";
-            case TokenType::RightParen: return ")";
-            case TokenType::LeftBrace: return "{";
-            case TokenType::RightBrace: return "}";
-            case TokenType::LeftBracket: return "[";
-            case TokenType::RightBracket: return "]";
-
-            case TokenType::Assign: return "=";
-            case TokenType::Not: return "!";
-            case TokenType::Eq: return "==";
-            case TokenType::NotEq: return "!=";
-            case TokenType::Lt: return "<";
-            case TokenType::Gt: return ">";
-            case TokenType::LtEq: return "<=";
-            case TokenType::GtEq: return ">=";
-
-            case TokenType::Or: return "||";
-            case TokenType::And: return "&&";
-            case TokenType::Arrow: return "->";
-            case TokenType::Dot: return ".";
-            case TokenType::Conditional: return "?";
-            case TokenType::NullCoal: return "??";
-            case TokenType::Colon: return ":";
-            case TokenType::Semi: return ";";
-            case TokenType::Comma: return ",";
-            case TokenType::Minus: return "-";
-            case TokenType::Plus: return "+";
-            case TokenType::Star: return "*";
-            case TokenType::Slash: return "/";
-
-            // Keywords
-            case TokenType::Temporary: return "temp";
-            case TokenType::Variable: return "v";
-            case TokenType::Context: return "context";
-            case TokenType::Math: return "math";
-            case TokenType::Query: return "query";
-            case TokenType::Geometry: return "geometry";
-            case TokenType::Material: return "material";
-            case TokenType::Texture: return "texture";
-            case TokenType::Array: return "array";
-            case TokenType::True: return "true";
-            case TokenType::False: return "false";
-            case TokenType::This: return "this";
-            case TokenType::Break: return "break";
-            case TokenType::Continue: return "continue";
-            case TokenType::ForEach: return "for_each";
-            case TokenType::Loop: return "loop";
-            case TokenType::Return: return "return";
-            case TokenType::Identifier: return "identifier";
-            case TokenType::String: return "string";
-
-            default: return "<unknown>";
-        }
-    }
+    std::string to_symbol_string(TokenType type);
 }
 
 

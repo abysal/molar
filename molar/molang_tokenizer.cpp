@@ -128,9 +128,8 @@ namespace molar {
     std::optional<Token> MolangTokenizer::parse_number() {
         try {
             const auto restore = this->buffer.get_rollback_point();
-            const auto first_char = this->buffer.next_char();
 
-            if (first_char == 'f') {
+            if (const auto first_char = this->buffer.next_char(); first_char == '-') {
                 const auto inner_rest = this->buffer.get_rollback_point();
                 if (!isdigit(this->buffer.next_char())) {
                     this->buffer.apply_rollback_point(restore);
@@ -142,13 +141,16 @@ namespace molar {
                 return std::nullopt;
             }
 
-            const size_t offset = first_char == 'f' ? 1 : 0;
 
-            size_t number_size = 1 - offset;
+            size_t number_size = 1;
 
             while (this->buffer.has_any()) {
                 const auto number_char = this->buffer.peak_char();
                 if (!isdigit(number_char) && number_char != '.') {
+                    if (toupper(number_char) == 'F') {
+                        number_char.apply();
+                    }
+
                     break;
                 }
                 number_char.apply();
@@ -157,7 +159,7 @@ namespace molar {
 
 
             return Token{
-                restore + offset,
+                restore,
                 number_size,
                 TokenType::Number
             };
@@ -243,6 +245,11 @@ namespace molar {
                 }
             }
 
+            if (const auto token = this->parse_number(); token.has_value()) {
+                tokens.emplace_back(token.value());
+                goto end;
+            }
+
             for (const auto [token, text]: simple_tokens) {
                 if (const auto token_start = this->buffer.next(text); token_start.has_value()) {
                     tokens.emplace_back(token_start.value(), token);
@@ -250,10 +257,6 @@ namespace molar {
                 }
             }
 
-            if (const auto token = this->parse_number(); token.has_value()) {
-                tokens.emplace_back(token.value());
-                goto end;
-            }
 
             if (const auto token = parse_identifier(); token.has_value()) {
                 tokens.emplace_back(token.value());

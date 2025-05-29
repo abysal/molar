@@ -22,7 +22,15 @@ add_library(molar STATIC ${MOLAR_SOURCES}
         molar/ast/Literal.hpp
         molar/ast/variable.cpp
         molar/ast/variable.hpp
-        molar/ast/internal/variable_manager.hpp)
+        molar/ast/internal/variable_manager.hpp
+        molar/molang_token.cpp
+        molar/ast/expression.cpp
+        molar/ast/access_expression.cpp
+        molar/ast/access_expression.hpp
+        molar/ast/controll_flow.cpp
+        molar/ast/controll_flow.hpp
+        molar/ast/keyword.cpp
+        molar/ast/keyword.hpp)
 
 
 if (MSVC)
