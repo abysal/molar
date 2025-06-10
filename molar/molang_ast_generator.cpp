@@ -123,7 +123,7 @@ namespace molar {
 
                 returns = std::make_unique<ast::VariableAssign>(std::move(value.value()), std::move(expression));
             } else {
-                returns = std::make_unique<ast::Variable>(std::move(value.value()));
+                returns = std::make_unique<ast::VariableReference>(std::move(value.value()));
             }
 
             return true;
@@ -254,7 +254,7 @@ namespace molar {
         if (const auto p = this->tokens.next(Token{TokenType::LeftParen}); !p.has_value()) return false;
         else position = p.value();
 
-        ast::ExpressionList exprs{};
+        ast::RawExpressionList exprs{};
 
         while (true) {
             if (this->tokens.next(Token{TokenType::RightParen})) break;
@@ -285,7 +285,7 @@ namespace molar {
                     std::nullopt;
         else our_position = position.value();
 
-        ast::ExpressionList expressions{};
+        ast::RawExpressionList expressions{};
 
         while (!this->tokens.next(Token{TokenType::RightBrace})) {
             auto expr = this->build_expression_recursive(0);
@@ -300,16 +300,15 @@ namespace molar {
             }
         }
 
-        return
-                ast::BlockExpression(our_position, expressions.size(), std::move(expressions));
+        return ast::BlockExpression(our_position, expressions.size(), std::move(expressions));
     }
 
-    std::optional<ast::Variable> MolangAstGenerator::build_variable() {
+    std::optional<ast::VariableReference> MolangAstGenerator::build_variable() {
         if (const auto token = this->tokens.next_value(std::array{
             Token{TokenType::Variable}, Token{TokenType::Context}, Token{TokenType::Temporary}
         }); token.has_value()) {
             const Token tkn = token.value();
-            return ast::Variable(tkn, this->source, this->tokens);
+            return ast::VariableReference(tkn, this->source, this->tokens);
         }
         return std::nullopt;
     }
@@ -348,7 +347,7 @@ namespace molar {
 
             auto identifier = ast::IdentifierLiteral(ident_token, this->source);
 
-            ast::ExpressionList params{};
+            ast::RawExpressionList params{};
 
             if (this->tokens.next(Token{TokenType::LeftParen})) {
                 try {

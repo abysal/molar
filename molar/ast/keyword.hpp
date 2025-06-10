@@ -5,8 +5,10 @@
 #ifndef KEYWORD_HPP
 #define KEYWORD_HPP
 
+#include "ast_visitor.hpp"
 #include "expression.hpp"
 #include "internal/variable_manager.hpp"
+#include "./ast_visitor.hpp"
 
 namespace molar::ast {
     class KeywordNode : public Expression {
@@ -20,11 +22,19 @@ namespace molar::ast {
     public:
         BreakNode(const size_t position, const size_t size) : KeywordNode(position, size, AstKind::Break) {
         }
+
+        void visit_node(class AstVisitor &visitor) override {
+            (void) visitor.visit_break(*this);
+        }
     };
 
     class ContinueNode final : public KeywordNode {
     public:
         ContinueNode(const size_t position, const size_t size) : KeywordNode(position, size, AstKind::Continue) {
+        }
+
+        void visit_node(class AstVisitor &visitor) override {
+            (void) visitor.visit_continue(*this);
         }
     };
 
@@ -32,14 +42,20 @@ namespace molar::ast {
     public:
         ThisNode(const size_t position, const size_t size) : KeywordNode(position, size, AstKind::This) {
         }
+
+        void visit_node(class AstVisitor &visitor) override {
+            (void) visitor.visit_this(*this);
+        }
     };
 
-    class ReturnNode final : public Expression, public VariableManager<ExpressionPtr> {
+    class ReturnNode final : public Expression, public VariableManager<RawExpressionPtr> {
     public:
-        ReturnNode(const size_t position, const size_t size, ExpressionPtr &&return_expression) : Expression(
+        ReturnNode(const size_t position, const size_t size, RawExpressionPtr &&return_expression) : Expression(
             position, size, AstKind::Return) {
             this->value = std::move(return_expression);
         }
+
+        void visit_node(class AstVisitor &visitor) override;
 
         void print(std::ostream &out, const uint32_t index) override;
     };

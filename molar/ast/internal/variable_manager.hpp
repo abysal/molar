@@ -13,6 +13,10 @@ namespace molar::ast {
             return this->value;
         }
 
+        VariableType &get_value() {
+            return this->value;
+        }
+
     protected:
         VariableType value{};
     };

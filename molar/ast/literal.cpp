@@ -3,6 +3,9 @@
 //
 
 #include "literal.hpp"
+#include <ostream>
+
+#include "ast_visitor.hpp"
 
 namespace molar::ast {
     BoolLiteral::BoolLiteral(const Token &token, const molar_impl::SourceBuffer &buffer) : Expression(
@@ -15,6 +18,10 @@ namespace molar::ast {
         out << std::boolalpha << this->value << "\n";
     }
 
+    void BoolLiteral::visit_node(class AstVisitor &visitor) {
+        visitor.visit_bool(*this);
+    }
+
     StringLiteral::StringLiteral(const Token &token, const molar_impl::SourceBuffer &buffer) : Expression(
         token, AstKind::StringLiteral) {
         token.assert_type(TokenType::String);
@@ -24,6 +31,10 @@ namespace molar::ast {
     void StringLiteral::print(std::ostream &out, const uint32_t index) {
         Expression::print(out, index);
         out << this->value << "\n";
+    }
+
+    void StringLiteral::visit_node(class AstVisitor &visitor) {
+        visitor.visit_string(*this);
     }
 
     NumericLiteral::NumericLiteral(const Token &token, const molar_impl::SourceBuffer &buffer) : Expression(
@@ -39,6 +50,10 @@ namespace molar::ast {
         out << this->value << "\n";
     }
 
+    void NumericLiteral::visit_node(class AstVisitor &visitor) {
+        visitor.visit_number(*this);
+    }
+
     IdentifierLiteral::IdentifierLiteral(const Token &token, const molar_impl::SourceBuffer &buffer) : Expression(
         token, AstKind::IdentifierLiteral) {
         token.assert_type(tokens_which_could_be_names);
@@ -48,5 +63,9 @@ namespace molar::ast {
     void IdentifierLiteral::print(std::ostream &out, const uint32_t index) {
         Expression::print(out, index);
         out << this->value;
+    }
+
+    void IdentifierLiteral::visit_node(class AstVisitor &visitor) {
+        throw std::logic_error("IdentifierLiteral should not be called");
     }
 }

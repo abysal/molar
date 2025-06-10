@@ -13,14 +13,14 @@ namespace molar::ast {
         ~CallExpression() override = default;
 
         CallExpression(const size_t position, const size_t size, CallType call_type, IdentifierLiteral &&function_name,
-                       ExpressionList &&arguments) : Expression(position, size, AstKind::CallExpression),
-                                                     arguments(std::move(arguments)),
-                                                     call_type(call_type),
-                                                     function_id(std::move(function_name)) {
+                       RawExpressionList &&arguments) : Expression(position, size, AstKind::CallExpression),
+                                                        arguments(std::move(arguments)),
+                                                        call_type(call_type),
+                                                        function_id(std::move(function_name)) {
         }
 
 
-        [[nodiscard]] ExpressionList &get_arguments() {
+        [[nodiscard]] RawExpressionList &get_arguments() {
             return this->arguments;;
         }
 
@@ -34,8 +34,10 @@ namespace molar::ast {
 
         void print(std::ostream &out, uint32_t index) override;
 
+        void visit_node(class AstVisitor &visitor) override;
+
     protected:
-        ExpressionList arguments{};
+        RawExpressionList arguments{};
         CallType call_type{};
         IdentifierLiteral function_id;
     };
@@ -51,6 +53,8 @@ namespace molar::ast {
 
         void print(std::ostream &out, uint32_t index) override;
 
+        std::string compile_id();
+
         [[nodiscard]] ResourceKind get_resource_kind() const {
             return this->resource_kind;
         }
@@ -58,6 +62,8 @@ namespace molar::ast {
         [[nodiscard]] IdentifierLiteral &get_resource_id() {
             return this->resource_id;
         }
+
+        void visit_node(class AstVisitor &visitor) override;
 
     protected:
         ResourceKind resource_kind{};
@@ -67,41 +73,53 @@ namespace molar::ast {
     class ArrayAccess final : public Expression {
     public:
         ArrayAccess(const size_t position, const size_t size, IdentifierLiteral &&array_id,
-                    ExpressionPtr &&index_expression) : Expression(position, size, AstKind::ArrayAccessExpression),
-                                                        array_id(std::move(array_id)),
-                                                        index_expression(std::move(index_expression)) {
+                    RawExpressionPtr &&index_expression) : Expression(position, size, AstKind::ArrayAccessExpression),
+                                                           array_id(std::move(array_id)),
+                                                           index_expression(std::move(index_expression)) {
         }
 
         ~ArrayAccess() override = default;
 
         void print(std::ostream &out, uint32_t index) override;
 
+        [[nodiscard]] IdentifierLiteral &get_array_id() {
+            return this->array_id;
+        }
+
+        [[nodiscard]] RawExpressionPtr &get_index_expression() {
+            return this->index_expression;
+        }
+
+        void visit_node(class AstVisitor &visitor) override;
+
     protected:
         IdentifierLiteral array_id;
-        ExpressionPtr index_expression;
+        RawExpressionPtr index_expression;
     };
 
     class ArrowAccess final : public Expression {
     public:
-        ArrowAccess(const size_t position, const size_t size, ExpressionPtr &&lhs_expression,
-                    ExpressionPtr &&rhs_expression) : Expression(position, size, AstKind::ArrowAccessExpression),
-                                                      lhs(std::move(lhs_expression)),
-                                                      rhs(std::move(rhs_expression)) {
+        ArrowAccess(const size_t position, const size_t size, RawExpressionPtr &&lhs_expression,
+                    RawExpressionPtr &&rhs_expression) : Expression(position, size, AstKind::ArrowAccessExpression),
+                                                         lhs(std::move(lhs_expression)),
+                                                         rhs(std::move(rhs_expression)) {
         }
 
-        [[nodiscard]] ExpressionPtr &get_lhs() {
+        [[nodiscard]] RawExpressionPtr &get_lhs() {
             return this->lhs;
         }
 
-        [[nodiscard]] ExpressionPtr &get_rhs() {
+        [[nodiscard]] RawExpressionPtr &get_rhs() {
             return this->rhs;
         }
 
         void print(std::ostream &out, uint32_t index) override;
 
+        void visit_node(class AstVisitor &visitor) override;
+
     protected:
-        ExpressionPtr lhs;
-        ExpressionPtr rhs;
+        RawExpressionPtr lhs;
+        RawExpressionPtr rhs;
     };
 } // molar
 

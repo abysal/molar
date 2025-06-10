@@ -5,7 +5,9 @@
 #include "variable.hpp"
 #include <array>
 
+#include "ast_visitor.hpp"
 #include "molang_error.hpp"
+#include <ostream>
 
 namespace molar::ast {
     VariableId::VariableId(const Token &token, const molar_impl::SourceBuffer &buffer,
@@ -21,9 +23,9 @@ namespace molar::ast {
     }
 
 
-    Variable::Variable(const Token &token, const molar_impl::SourceBuffer &buffer,
-                       TokenBuffer &token_buffer) : Expression(
-        token, AstKind::VariableDeclaration) {
+    VariableReference::VariableReference(const Token &token, const molar_impl::SourceBuffer &buffer,
+                                         TokenBuffer &token_buffer) : Expression(
+        token, AstKind::VariableReference) {
         switch (token.type) {
             case TokenType::Context: {
                 this->decl_type = VariableDeclarationType::Context;
@@ -49,9 +51,9 @@ namespace molar::ast {
         this->variable_id = std::move(VariableId(token_buffer.next_value(), buffer, token_buffer));
     }
 
-    void Variable::print(std::ostream &out, const uint32_t index) {
+    void VariableReference::print(std::ostream &out, const uint32_t index) {
         Expression::print(out, index);
-        out << Variable::var_decl_type_to_string(this->decl_type);
+        out << VariableReference::var_decl_type_to_string(this->decl_type);
 
         const VariableId *next_id = &this->variable_id;
 
@@ -63,13 +65,30 @@ namespace molar::ast {
         out << '\n';
     }
 
-    std::string Variable::var_decl_type_to_string(VariableDeclarationType type) {
+    std::string VariableReference::var_decl_type_to_string(VariableDeclarationType type) {
         switch (type) {
             case VariableDeclarationType::Temp: return "Temp";
             case VariableDeclarationType::Var: return "Var";
             case VariableDeclarationType::Context: return "Context";
             default: return "Unknown";
         }
+    }
+
+    std::string VariableReference::build_access_string() const {
+        std::string start = VariableReference::var_decl_type_to_string(this->decl_type);
+
+        const VariableId *next_id = &this->variable_id;
+
+        while (next_id) {
+            start += "." + next_id->value;
+            next_id = next_id->child_id.get();
+        }
+
+        return start;
+    }
+
+    void VariableReference::visit_node(class AstVisitor &visitor) {
+        (void) visitor.visit_variable(*this);
     }
 
     void VariableAssign::print(std::ostream &out, const uint32_t index) {
@@ -79,5 +98,11 @@ namespace molar::ast {
         Expression::print_util_tab(out, index);
         out << "Expression:\n";
         this->expression->print(out, index + 1);
+    }
+
+    void VariableAssign::visit_node(class AstVisitor &visitor) {
+        if (visitor.visit_assignment(*this)) {
+            this->expression->visit_node(visitor);
+        }
     }
 } // molar

@@ -67,7 +67,7 @@ namespace molar {
 
         std::optional<ast::BlockExpression> build_block();
 
-        std::optional<ast::Variable> build_variable();
+        std::optional<ast::VariableReference> build_variable();
 
 
         std::pair<ast::ExpressionPtr, bool> next_expression(ast::ExpressionPtr &&lhs, uint8_t min_binding_power);

@@ -9,6 +9,7 @@
 #include "molang_ast_generator.hpp"
 #include "molang_tokenizer.hpp"
 #include "ast/variable.hpp"
+#include "execution/preprocessor/molang_preprocessor.hpp"
 
 void simple_token() {
     constexpr auto expressions = std::array{"==", "m.sin(v.x + v.z * q.pos())", "v.our_id == 'some_string :3'"};
@@ -27,7 +28,7 @@ void variable_ast() {
     molar::TokenBuffer buffer{std::move(tokens)};
     const auto source_buffer = parser.move_buffer();
 
-    molar::ast::Variable var{buffer.next_value(), source_buffer, buffer};
+    molar::ast::VariableReference var{buffer.next_value(), source_buffer, buffer};
 }
 
 void full_simple_ast() {
@@ -65,6 +66,28 @@ void full_simple_ast() {
     }
 }
 
+void execution_tree_builder() {
+    constexpr auto expressions = std::array{
+        "v.a + v.b * 2.5 + "
+        "t.speed / (v.mass + 0.1) + "
+        "temp.counter * 4 - v.xtra * "
+        "v.a + v.b * "
+        "v.location.x + v.location.y + v.location.z"
+    };
+
+    for (const auto expression: expressions) {
+        molar::MolangTokenizer parser{expression};
+        auto tokens = parser.parse_tokens();
+        molar::TokenBuffer buffer{std::move(tokens)};
+        auto source_buffer = parser.move_buffer();
+
+        molar::MolangAstGenerator ast(std::move(buffer), std::move(source_buffer));
+
+        molar::exec::MolangPreprocessor processor{std::move(ast.build_ast())};
+        processor.process();
+    }
+}
+
 int main() {
-    full_simple_ast();
+    execution_tree_builder();
 }

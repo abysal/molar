@@ -30,7 +30,15 @@ add_library(molar STATIC ${MOLAR_SOURCES}
         molar/ast/controll_flow.cpp
         molar/ast/controll_flow.hpp
         molar/ast/keyword.cpp
-        molar/ast/keyword.hpp)
+        molar/ast/keyword.hpp
+        molar/execution/preprocessor/molang_preprocessor.cpp
+        molar/execution/preprocessor/molang_preprocessor.hpp
+        molar/ast/ast_visitor.hpp
+        molar/ast/ast_visitor.cpp
+        molar/execution/preprocessor/ast_reallocator.cpp
+        molar/execution/preprocessor/ast_reallocator.hpp
+        molar/execution/preprocessor/execution_nodes/pre_allocated_variable.cpp
+        molar/execution/preprocessor/execution_nodes/pre_allocated_variable.hpp)
 
 
 if (MSVC)

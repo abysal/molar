@@ -16,6 +16,8 @@ namespace molar::ast {
         ~BoolLiteral() override = default;
 
         void print(std::ostream &out, const uint32_t index) override;
+
+        void visit_node(class AstVisitor &visitor) override;
     };
 
     class StringLiteral final : public Expression, public VariableManager<std::string> {
@@ -25,6 +27,8 @@ namespace molar::ast {
         ~StringLiteral() override = default;
 
         void print(std::ostream &out, const uint32_t index) override;
+
+        void visit_node(class AstVisitor &visitor) override;
     };
 
     class NumericLiteral final : public Expression, public VariableManager<float> {
@@ -34,6 +38,8 @@ namespace molar::ast {
         ~NumericLiteral() override = default;
 
         void print(std::ostream &out, const uint32_t index) override;
+
+        void visit_node(class AstVisitor &visitor) override;
     };
 
     class IdentifierLiteral : public Expression, public VariableManager<std::string> {
@@ -46,8 +52,9 @@ namespace molar::ast {
 
         IdentifierLiteral() = default;
 
-    public:
         void print(std::ostream &out, const uint32_t index) override;
+
+        void visit_node(class AstVisitor &visitor) override;
     };
 }
 

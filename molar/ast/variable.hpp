@@ -21,7 +21,7 @@ namespace molar::ast {
     public:
         VariableId(const Token &token, const molar_impl::SourceBuffer &buffer, TokenBuffer &token_buffer);
 
-        bool is_end() const { return this->child_id == nullptr; }
+        [[nodiscard]] bool is_end() const { return this->child_id == nullptr; }
 
         VariableId(VariableId &&) noexcept = default;
 
@@ -30,13 +30,18 @@ namespace molar::ast {
 
         VariableId &operator=(VariableId &&) noexcept = default;
 
+
+        [[nodiscard]] const std::unique_ptr<VariableId> &get_child() const {
+            return this->child_id;
+        }
+
     private:
         std::unique_ptr<VariableId> child_id{}; // Handles cases where we have nested members
         // Such as v.foo.bar
         // we would be foo
         // and the child would be bar
 
-        friend class Variable;
+        friend class VariableReference;
 
     private:
         VariableId() = default;
@@ -48,17 +53,29 @@ namespace molar::ast {
         ~VariableId() override = default;
     };
 
-    class Variable final : public Expression {
+    class VariableReference final : public Expression {
     public:
-        Variable(const Token &token, const molar_impl::SourceBuffer &buffer, TokenBuffer &token_buffer);
+        VariableReference(const Token &token, const molar_impl::SourceBuffer &buffer, TokenBuffer &token_buffer);
 
-        ~Variable() override = default;
+        ~VariableReference() override = default;
 
-        Variable(Variable &&) noexcept = default;
+        VariableReference(VariableReference &&) noexcept = default;
 
         void print(std::ostream &out, uint32_t index) override;
 
         static std::string var_decl_type_to_string(VariableDeclarationType type);
+
+        [[nodiscard]] std::string build_access_string() const;
+
+        [[nodiscard]] VariableDeclarationType get_access_type() const {
+            return this->decl_type;
+        }
+
+        [[nodiscard]] const VariableId &get_raw_id() const {
+            return this->variable_id;
+        }
+
+        void visit_node(class AstVisitor &visitor) override;
 
     protected:
         VariableDeclarationType decl_type{};
@@ -67,26 +84,29 @@ namespace molar::ast {
 
     class VariableAssign final : public Expression {
     public:
-        VariableAssign(Variable &&variable, ExpressionPtr &&expression) : Expression(variable.get_position(),
-                                                                              variable.get_size(),
-                                                                              AstKind::AssignmentExpression),
-                                                                          variable(std::move(variable)),
-                                                                          expression(std::move(expression)) {
+        VariableAssign(VariableReference &&variable, RawExpressionPtr &&expression) : Expression(
+                variable.get_position(),
+                variable.get_size(),
+                AstKind::AssignmentExpression),
+            variable(std::move(variable)),
+            expression(std::move(expression)) {
         }
 
-        void print(std::ostream &out, const uint32_t index) override;
+        void print(std::ostream &out, uint32_t index) override;
 
-        [[nodiscard]] Variable &get_variable() {
+        [[nodiscard]] VariableReference &get_variable() {
             return this->variable;
         }
 
-        [[nodiscard]] ExpressionPtr &get_expression() {
+        [[nodiscard]] RawExpressionPtr &get_expression() {
             return this->expression;
         }
 
+        void visit_node(class AstVisitor &visitor) override;
+
     protected:
-        Variable variable;
-        ExpressionPtr expression;
+        VariableReference variable;
+        RawExpressionPtr expression;
     };
 } // molar::ast
 

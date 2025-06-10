@@ -10,7 +10,7 @@
 namespace molar::ast {
     class LoopExpression final : public Expression {
     public:
-        LoopExpression(const size_t position, const size_t size, ExpressionPtr &&count_expression,
+        LoopExpression(const size_t position, const size_t size, RawExpressionPtr &&count_expression,
                        BlockExpression &&loop_expression) : Expression(position, size,
                                                                        AstKind::LoopExpression),
                                                             count_expression(
@@ -19,7 +19,7 @@ namespace molar::ast {
                                                                 std::move(loop_expression)) {
         }
 
-        [[nodiscard]] ExpressionPtr &get_count_expression() {
+        [[nodiscard]] RawExpressionPtr &get_count_expression() {
             return this->count_expression;
         }
 
@@ -31,8 +31,10 @@ namespace molar::ast {
 
         void print(std::ostream &out, const uint32_t index) override;
 
+        void visit_node(class AstVisitor &visitor) override;
+
     private:
-        ExpressionPtr count_expression;
+        RawExpressionPtr count_expression;
         BlockExpression loop_expression;
     };
 
@@ -42,8 +44,8 @@ namespace molar::ast {
 
         void print(std::ostream &out, const uint32_t index) override;
 
-        ForEachExpression(const size_t position, const size_t size, Variable &&storage,
-                          ExpressionPtr &&array_fetch_expression,
+        ForEachExpression(const size_t position, const size_t size, VariableReference &&storage,
+                          RawExpressionPtr &&array_fetch_expression,
                           BlockExpression &&loop_expression) : Expression(position, size,
                                                                           AstKind::ForEachExpression),
                                                                storage(std::move(storage)),
@@ -52,11 +54,11 @@ namespace molar::ast {
                                                                loop_expression(std::move(loop_expression)) {
         };
 
-        [[nodiscard]] Variable &get_storage() {
+        [[nodiscard]] VariableReference &get_storage() {
             return this->storage;
         }
 
-        [[nodiscard]] ExpressionPtr &get_array_fetch_expression() {
+        [[nodiscard]] RawExpressionPtr &get_array_fetch_expression() {
             return this->array_fetch_expression;
         }
 
@@ -64,9 +66,11 @@ namespace molar::ast {
             return this->loop_expression;
         }
 
+        void visit_node(class AstVisitor &visitor) override;
+
     private:
-        Variable storage;
-        ExpressionPtr array_fetch_expression;
+        VariableReference storage;
+        RawExpressionPtr array_fetch_expression;
         BlockExpression loop_expression;
     };
 
@@ -74,49 +78,53 @@ namespace molar::ast {
     public:
         void print(std::ostream &out, const uint32_t index) override;
 
-        ConditionalExpression(const size_t position, const size_t size, ExpressionPtr &&condition_expression,
-                              ExpressionPtr &&if_expression) : Expression(position, size,
-                                                                          AstKind::ConditionalExpression),
-                                                               condition(std::move(condition_expression)),
-                                                               if_expression(std::move(if_expression)) {
+        ConditionalExpression(const size_t position, const size_t size, RawExpressionPtr &&condition_expression,
+                              RawExpressionPtr &&if_expression) : Expression(position, size,
+                                                                             AstKind::ConditionalExpression),
+                                                                  condition(std::move(condition_expression)),
+                                                                  if_expression(std::move(if_expression)) {
         }
 
         ~ConditionalExpression() override = default;
 
     protected:
-        ExpressionPtr condition;
-        ExpressionPtr if_expression;
+        RawExpressionPtr condition;
+        RawExpressionPtr if_expression;
 
     public:
-        [[nodiscard]] ExpressionPtr &get_condition() {
+        [[nodiscard]] RawExpressionPtr &get_condition() {
             return this->condition;
         }
 
-        [[nodiscard]] ExpressionPtr &get_if_expression() {
+        [[nodiscard]] RawExpressionPtr &get_if_expression() {
             return this->if_expression;
         }
+
+        void visit_node(class AstVisitor &visitor) override;
     };
 
     class TernaryExpression final : public ConditionalExpression {
     public:
         void print(std::ostream &out, const uint32_t index) override;
 
-        TernaryExpression(const size_t position, const size_t size, ExpressionPtr &&condition_expression,
-                          ExpressionPtr &&if_expression,
-                          ExpressionPtr &&else_expression) : ConditionalExpression(position, size,
-                                                                 std::move(condition_expression),
-                                                                 std::move(if_expression)),
-                                                             else_expression(std::move(else_expression)) {
+        TernaryExpression(const size_t position, const size_t size, RawExpressionPtr &&condition_expression,
+                          RawExpressionPtr &&if_expression,
+                          RawExpressionPtr &&else_expression) : ConditionalExpression(position, size,
+                                                                    std::move(condition_expression),
+                                                                    std::move(if_expression)),
+                                                                else_expression(std::move(else_expression)) {
             this->type = AstKind::TernaryExpression;
         }
 
     protected:
-        ExpressionPtr else_expression;
+        RawExpressionPtr else_expression;
 
     public:
-        [[nodiscard]] ExpressionPtr &get_else_expression() {
+        [[nodiscard]] RawExpressionPtr &get_else_expression() {
             return this->else_expression;
         }
+
+        void visit_node(class AstVisitor &visitor) override;
     };
 } // molar
 
