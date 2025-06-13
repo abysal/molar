@@ -7,31 +7,29 @@
 #include <memory>
 
 #include "expression.hpp"
-#include "literal.hpp"
 #include "internal/source_buffer.hpp"
+#include "literal.hpp"
 
 namespace molar::ast {
-    enum class VariableDeclarationType {
-        Temp,
-        Var,
-        Context
-    };
+    enum class VariableDeclarationType { Temp, Var, Context };
 
     class VariableId final : public IdentifierLiteral {
     public:
-        VariableId(const Token &token, const molar_impl::SourceBuffer &buffer, TokenBuffer &token_buffer);
+        VariableId(
+            const Token& token, const molar_impl::SourceBuffer& buffer,
+            TokenBuffer& token_buffer
+        );
 
         [[nodiscard]] bool is_end() const { return this->child_id == nullptr; }
 
-        VariableId(VariableId &&) noexcept = default;
+        VariableId(VariableId&&) noexcept = default;
 
-        VariableId(const VariableId &) = delete; // still deleted due to unique_ptr
-        VariableId &operator=(const VariableId &) = delete;
+        VariableId(const VariableId&)            = delete; // still deleted due to unique_ptr
+        VariableId& operator=(const VariableId&) = delete;
 
-        VariableId &operator=(VariableId &&) noexcept = default;
+        VariableId& operator=(VariableId&&) noexcept = default;
 
-
-        [[nodiscard]] const std::unique_ptr<VariableId> &get_child() const {
+        [[nodiscard]] const std::unique_ptr<VariableId>& get_child() const {
             return this->child_id;
         }
 
@@ -47,23 +45,27 @@ namespace molar::ast {
         VariableId() = default;
 
     public:
-        void print(std::ostream &out, const uint32_t index) override {
-        }
+        void print(std::ostream& out, const uint32_t index) override {}
 
         ~VariableId() override = default;
     };
 
     class VariableReference final : public Expression {
     public:
-        VariableReference(const Token &token, const molar_impl::SourceBuffer &buffer, TokenBuffer &token_buffer);
+        VariableReference(
+            const Token& token, const molar_impl::SourceBuffer& buffer,
+            TokenBuffer& token_buffer
+        );
 
         ~VariableReference() override = default;
 
-        VariableReference(VariableReference &&) noexcept = default;
+        VariableReference(VariableReference&&) noexcept = default;
 
-        void print(std::ostream &out, uint32_t index) override;
+        void print(std::ostream& out, uint32_t index) override;
 
         static std::string var_decl_type_to_string(VariableDeclarationType type);
+
+        static std::string var_decl_type_to_string_short(VariableDeclarationType type);
 
         [[nodiscard]] std::string build_access_string() const;
 
@@ -71,43 +73,45 @@ namespace molar::ast {
             return this->decl_type;
         }
 
-        [[nodiscard]] const VariableId &get_raw_id() const {
-            return this->variable_id;
+        [[nodiscard]] const VariableId& get_raw_id() const { return this->variable_id; }
+
+        [[nodiscard]] bool is_struct() const {
+            return this->variable_id.get_child() != nullptr;
         }
 
-        void visit_node(class AstVisitor &visitor) override;
+        [[nodiscard]] std::pair<std::string, std::string> build_lookup_names() const;
+
+        void visit_node(class AstVisitor& visitor) override;
 
     protected:
         VariableDeclarationType decl_type{};
-        VariableId variable_id{};
+        VariableId              variable_id{};
     };
 
     class VariableAssign final : public Expression {
     public:
-        VariableAssign(VariableReference &&variable, RawExpressionPtr &&expression) : Expression(
-                variable.get_position(),
-                variable.get_size(),
-                AstKind::AssignmentExpression),
-            variable(std::move(variable)),
-            expression(std::move(expression)) {
+        VariableAssign(VariableReference&& variable, RawExpressionPtr&& expression)
+            : Expression(
+                  variable.get_position(), variable.get_size(), AstKind::AssignmentExpression
+              ),
+              variable(std::move(variable)), expression(std::move(expression)) {}
+
+        void print(std::ostream& out, uint32_t index) override;
+
+        [[nodiscard]] VariableReference& get_variable() { return this->variable; }
+
+        [[nodiscard]] RawExpressionPtr& get_expression() { return this->expression; }
+
+        [[nodiscard]] RawExpressionPtr&& consume_expression() {
+            return std::move(this->expression);
         }
 
-        void print(std::ostream &out, uint32_t index) override;
-
-        [[nodiscard]] VariableReference &get_variable() {
-            return this->variable;
-        }
-
-        [[nodiscard]] RawExpressionPtr &get_expression() {
-            return this->expression;
-        }
-
-        void visit_node(class AstVisitor &visitor) override;
+        void visit_node(class AstVisitor& visitor) override;
 
     protected:
         VariableReference variable;
-        RawExpressionPtr expression;
+        RawExpressionPtr  expression;
     };
-} // molar::ast
+} // namespace molar::ast
 
-#endif //VARIABLE_HPP
+#endif // VARIABLE_HPP

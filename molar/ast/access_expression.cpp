@@ -3,23 +3,29 @@
 //
 
 #include "access_expression.hpp"
-#include <ostream>
-#include "access_expression.hpp"
+#include "ast_visitor.hpp"
 #include "expression.hpp"
 #include "keyword.hpp"
 #include "variable.hpp"
-#include "ast_visitor.hpp"
+#include <ostream>
 
 namespace molar::ast {
-    void CallExpression::print(std::ostream &out, const uint32_t index) {
+    std::string CallExpression::build_full_name() const {
+        return std::format(
+            "{}{}", this->get_function_id().get_value(),
+            this->get_call_type() == CallType::Math ? "m" : "q"
+        );
+    }
+    void CallExpression::print(std::ostream& out, const uint32_t index) {
         Expression::print(out, index);
-        out << to_string(static_cast<TokenType>(this->call_type)) << "." << this->function_id.get_value() << "\n";
+        out << to_string(static_cast<TokenType>(this->call_type)) << "."
+            << this->function_id.get_value() << "\n";
 
         Expression::print_util_tab(out, index);
         if (!this->arguments.empty()) {
             out << "(\n";
 
-            for (const auto &expression: this->arguments) {
+            for (const auto& expression : this->arguments) {
                 expression->print(out, index + 1);
                 Expression::print_util_tab(out, index + 1);
                 out << ",\n";
@@ -32,29 +38,32 @@ namespace molar::ast {
         }
     }
 
-    void CallExpression::visit_node(class AstVisitor &visitor) {
+    void CallExpression::visit_node(class AstVisitor& visitor) {
         if (visitor.visit_call(*this)) {
-            for (auto &expr: this->arguments) {
+            for (auto& expr : this->arguments) {
                 expr->visit_node(visitor);
             }
         }
     }
 
-    void ResourceExpression::print(std::ostream &out, const uint32_t index) {
+    void ResourceExpression::print(std::ostream& out, const uint32_t index) {
         Expression::print(out, index);
-        out << to_string(static_cast<TokenType>(this->resource_kind)) << "." << this->resource_id.get_value() << "\n";
+        out << to_string(static_cast<TokenType>(this->resource_kind)) << "."
+            << this->resource_id.get_value() << "\n";
     }
 
     std::string ResourceExpression::compile_id() {
-        return std::format("{}.{}", to_string(static_cast<TokenType>(this->resource_kind)),
-                           this->resource_id.get_value());
+        return std::format(
+            "{}.{}", to_string(static_cast<TokenType>(this->resource_kind)),
+            this->resource_id.get_value()
+        );
     }
 
-    void ResourceExpression::visit_node(class AstVisitor &visitor) {
-        (void) visitor.visit_resource(*this);
+    void ResourceExpression::visit_node(class AstVisitor& visitor) {
+        (void)visitor.visit_resource(*this);
     }
 
-    void ArrayAccess::print(std::ostream &out, const uint32_t index) {
+    void ArrayAccess::print(std::ostream& out, const uint32_t index) {
         Expression::print(out, index);
         out << to_string(TokenType::Array) << "." << this->array_id.get_value() << "[\n";
         this->index_expression->print(out, index + 1);
@@ -62,13 +71,13 @@ namespace molar::ast {
         out << "]\n";
     }
 
-    void ArrayAccess::visit_node(class AstVisitor &visitor) {
+    void ArrayAccess::visit_node(class AstVisitor& visitor) {
         if (visitor.visit_array_access(*this)) {
             this->index_expression->visit_node(visitor);
         }
     }
 
-    void ArrowAccess::print(std::ostream &out, const uint32_t index) {
+    void ArrowAccess::print(std::ostream& out, const uint32_t index) {
         Expression::print(out, index);
         out << to_string(TokenType::Arrow) << "\n";
         Expression::print_util_tab(out, index);
@@ -79,10 +88,10 @@ namespace molar::ast {
         this->rhs->print(out, index + 1);
     }
 
-    void ArrowAccess::visit_node(class AstVisitor &visitor) {
+    void ArrowAccess::visit_node(class AstVisitor& visitor) {
         if (visitor.visit_arrow_access(*this)) {
             this->lhs->visit_node(visitor);
             this->rhs->visit_node(visitor);
         }
     }
-} // molar
+} // namespace molar::ast

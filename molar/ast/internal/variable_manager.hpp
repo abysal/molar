@@ -6,20 +6,19 @@
 #define VARIABLE_MANAGER_HPP
 
 namespace molar::ast {
-    template<typename VariableType>
-    class VariableManager {
+    template <typename VariableType> class VariableManager {
     public:
-        const VariableType &get_value() const {
-            return this->value;
-        }
+        const VariableType& get_value() const { return this->value; }
 
-        VariableType &get_value() {
-            return this->value;
-        }
+        VariableType& get_value() { return this->value; }
+
+        VariableManager() = default;
+
+        explicit VariableManager(VariableType t) { this->value = t; }
 
     protected:
         VariableType value{};
     };
-} // molar
+} // namespace molar::ast
 
-#endif //VARIABLE_MANAGER_HPP
+#endif // VARIABLE_MANAGER_HPP

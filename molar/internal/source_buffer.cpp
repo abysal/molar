@@ -3,8 +3,9 @@
 //
 
 #include "source_buffer.hpp"
-#include <stdexcept>
 #include <ranges>
+#include <stdexcept>
+
 
 namespace molar_impl {
     std::optional<size_t> SourceBuffer::next(const std::string_view next) {
@@ -15,8 +16,8 @@ namespace molar_impl {
         }
 
         if (this->get_view().starts_with(next)) {
-            const auto current_index = this->current_pos;
-            this->current_pos += next.size();
+            const auto current_index  = this->current_pos;
+            this->current_pos        += next.size();
             return current_index;
         }
 
@@ -30,8 +31,8 @@ namespace molar_impl {
             return std::nullopt;
         }
         if (this->get_view().starts_with(next)) {
-            const auto current_index = this->current_pos;
-            this->current_pos += 1;
+            const auto current_index  = this->current_pos;
+            this->current_pos        += 1;
             return current_index;
         }
 
@@ -44,20 +45,20 @@ namespace molar_impl {
         } catch (...) {
             return std::nullopt;
         }
-        for (const auto [source, expected]: std::views::zip(this->get_view(), next)) {
+        for (const auto [source, expected] : std::views::zip(this->get_view(), next)) {
             if (toupper(source) != toupper(expected)) {
                 return std::nullopt;
             }
         }
 
-        const auto current_index = this->current_pos;
-        this->current_pos += next.size();
+        const auto current_index  = this->current_pos;
+        this->current_pos        += next.size();
         return current_index;
     }
 
     char SourceBuffer::next_char() {
         this->bounds_check(1);
-        const char value = this->get_view()[0];
+        const char value   = this->get_view()[0];
         this->current_pos += 1;
         return value;
     }
@@ -66,7 +67,7 @@ namespace molar_impl {
         this->bounds_check(1);
         return Peak{
             [&] {
-                const auto value = this->next_char();
+                const auto value   = this->next_char();
                 this->current_pos -= 1;
                 return value;
             }(),
@@ -79,7 +80,8 @@ namespace molar_impl {
         this->current_pos += i;
     }
 
-    std::string_view SourceBuffer::slice_from_source(const size_t start, const size_t length) const {
+    std::string_view
+    SourceBuffer::slice_from_source(const size_t start, const size_t length) const {
         return std::string_view{this->string_source}.substr(start, length);
     }
 
@@ -92,4 +94,4 @@ namespace molar_impl {
     std::string_view SourceBuffer::get_view() const {
         return std::string_view{this->string_source}.substr(this->current_pos);
     }
-} // molar_impl
+} // namespace molar_impl

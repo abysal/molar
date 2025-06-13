@@ -7,7 +7,5 @@
 #include "variable.hpp"
 
 namespace molar::ast {
-    void AstVisitor::visit() {
-        this->root_expression.visit_node(*this);
-    }
-} // molar
+    void AstVisitor::visit() { this->root_expression.visit_node(*this); }
+} // namespace molar::ast

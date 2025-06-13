@@ -9,13 +9,13 @@
 #include <ostream>
 
 namespace molar::ast {
-    void ReturnNode::visit_node(class AstVisitor &visitor) {
+    void ReturnNode::visit_node(class AstVisitor& visitor) {
         if (visitor.visit_return(*this)) {
             this->value->visit_node(visitor);
         }
     }
 
-    void ReturnNode::print(std::ostream &out, const uint32_t index) {
+    void ReturnNode::print(std::ostream& out, const uint32_t index) {
         Expression::print(out, index);
         if (!this->value) {
             return;
@@ -25,4 +25,4 @@ namespace molar::ast {
         out << "return expression:\n";
         this->value->print(out, index + 1);
     }
-} // molar
+} // namespace molar::ast

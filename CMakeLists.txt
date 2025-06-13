@@ -35,10 +35,18 @@ add_library(molar STATIC ${MOLAR_SOURCES}
         molar/execution/preprocessor/molang_preprocessor.hpp
         molar/ast/ast_visitor.hpp
         molar/ast/ast_visitor.cpp
-        molar/execution/preprocessor/ast_reallocator.cpp
-        molar/execution/preprocessor/ast_reallocator.hpp
         molar/execution/preprocessor/execution_nodes/pre_allocated_variable.cpp
-        molar/execution/preprocessor/execution_nodes/pre_allocated_variable.hpp)
+        molar/execution/preprocessor/execution_nodes/pre_allocated_variable.hpp
+        molar/execution/preprocessor/execution_nodes/pre_allocated.cpp
+        molar/execution/preprocessor/execution_nodes/pre_allocated.hpp
+        molar/execution/preprocessor/processed_ast_visitor.cpp
+        molar/execution/preprocessor/processed_ast_visitor.hpp
+        molar/internal/checked_down_cast.hpp
+        molar/execution/preprocessor/ast_rebuilder.cpp
+        molar/execution/preprocessor/ast_rebuilder.hpp
+        molar/ast/ast_replacer.cpp
+        molar/ast/ast_replacer.hpp
+)
 
 
 if (MSVC)

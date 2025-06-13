@@ -4,12 +4,13 @@
 
 #ifndef MOLANG_TOKEN_HPP
 #define MOLANG_TOKEN_HPP
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <string>
-#include <array>
-#include <vector>
 #include <string_view>
+#include <vector>
+
 
 #include "internal/source_buffer.hpp"
 
@@ -191,98 +192,64 @@ namespace molar {
 
     enum class UnaryOp : uint8_t {
         Negate = TokenType::Minus,
-        Not = TokenType::Not,
+        Not    = TokenType::Not,
     };
 
     enum class CallType : uint8_t {
-        Math = TokenType::Math,
+        Math  = TokenType::Math,
         Query = TokenType::Query,
     };
 
     enum class ResourceKind : uint8_t {
         Geometry = TokenType::Geometry,
         Material = TokenType::Material,
-        Texture = TokenType::Texture,
+        Texture  = TokenType::Texture,
     };
 
-    std::optional<std::pair<uint8_t, uint8_t> > token_bind_power(TokenType type);
-
+    std::optional<std::pair<uint8_t, uint8_t>> token_bind_power(TokenType type);
 
     constexpr auto tokens_which_could_be_names = std::array{
-        TokenType::Math,
-        TokenType::Query,
-        TokenType::Variable,
-        TokenType::Geometry,
-        TokenType::Material,
-        TokenType::Texture,
-        TokenType::Array,
-        TokenType::True,
-        TokenType::False,
-        TokenType::This,
-        TokenType::Break,
-        TokenType::Continue,
-        TokenType::ForEach,
-        TokenType::Loop,
-        TokenType::Return,
-        TokenType::Temporary,
-        TokenType::Context,
-        TokenType::Eq,
-        TokenType::NotEq,
-        TokenType::LtEq,
-        TokenType::GtEq,
-        TokenType::Or,
-        TokenType::And,
-        TokenType::Arrow,
-        TokenType::NullCoal,
-        TokenType::Identifier,
+        TokenType::Math,     TokenType::Query,      TokenType::Variable, TokenType::Geometry,
+        TokenType::Material, TokenType::Texture,    TokenType::Array,    TokenType::True,
+        TokenType::False,    TokenType::This,       TokenType::Break,    TokenType::Continue,
+        TokenType::ForEach,  TokenType::Loop,       TokenType::Return,   TokenType::Temporary,
+        TokenType::Context,  TokenType::Eq,         TokenType::NotEq,    TokenType::LtEq,
+        TokenType::GtEq,     TokenType::Or,         TokenType::And,      TokenType::Arrow,
+        TokenType::NullCoal, TokenType::Identifier,
     };
 
-
     struct Token {
-        size_t size{1};
+        size_t    size{1};
         TokenType type{};
-        size_t position{};
+        size_t    position{};
 
         Token() = default;
 
-        Token(const size_t position, const std::string_view string,
-              const TokenType type) : type(type), position(position) {
+        Token(const size_t position, const std::string_view string, const TokenType type)
+            : type(type), position(position) {
             this->size = string.size();
         }
 
-        Token(const size_t position, const TokenType type) : type(type), position(position) {
-        }
+        Token(const size_t position, const TokenType type) : type(type), position(position) {}
 
-        Token(const size_t position, const size_t size,
-              const TokenType type
-        ) : size(size), type(type), position(position) {
-        }
+        Token(const size_t position, const size_t size, const TokenType type)
+            : size(size), type(type), position(position) {}
 
-        constexpr explicit Token(const TokenType type) : type(type), position(-1) {
-        }
+        constexpr explicit Token(const TokenType type) : type(type), position(-1) {}
 
-        bool operator==(const Token &other) const {
-            return this->type == other.type;
-        }
+        bool operator==(const Token& other) const { return this->type == other.type; }
 
-        bool operator!=(const Token &other) const {
-            return !(*this == other);
-        }
+        bool operator!=(const Token& other) const { return !(*this == other); }
 
-        bool operator==(const TokenType &other) const {
-            return this->type == other;
-        }
+        bool operator==(const TokenType& other) const { return this->type == other; }
 
-        bool operator!=(const TokenType &other) const {
-            return !(*this == other);
-        }
+        bool operator!=(const TokenType& other) const { return !(*this == other); }
 
+        // TODO: Make this a debug only function, else just make it do nothing so it gets
+        // removed in release
 
-        // TODO: Make this a debug only function, else just make it do nothing so it gets removed in release
-
-        template<size_t N>
-        void assert_type(const std::array<TokenType, N> &types) const {
-            for (const auto typ: types) {
+        template <size_t N> void assert_type(const std::array<TokenType, N>& types) const {
+            for (const auto typ : types) {
                 if (*this == typ) {
                     return;
                 }
@@ -290,9 +257,8 @@ namespace molar {
             assert(false);
         }
 
-        template<size_t N>
-        bool check_types(const std::array<TokenType, N> &types) const {
-            for (const auto typ: types) {
+        template <size_t N> bool check_types(const std::array<TokenType, N>& types) const {
+            for (const auto typ : types) {
                 if (*this == typ) {
                     return true;
                 }
@@ -308,13 +274,11 @@ namespace molar {
         }
     };
 
-    using TokenBuffer = molar_impl::SpanBuffer<std::vector<Token> >;
-
+    using TokenBuffer = molar_impl::SpanBuffer<std::vector<Token>>;
 
     std::string to_string(TokenType type);
 
     std::string to_symbol_string(TokenType type);
-}
+} // namespace molar
 
-
-#endif //MOLANG_TOKEN_HPP
+#endif // MOLANG_TOKEN_HPP

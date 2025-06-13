@@ -15,34 +15,27 @@ namespace molar_impl {
     public:
         using RollbackPoint = size_t;
 
-
         class Peak {
         public:
             Peak() = default;
 
             // NOLINTNEXTLINE
-            operator char() const {
-                return our_value;
-            }
+            operator char() const { return our_value; }
 
-            void apply() const {
-                this->parent->skip(1);
-            }
+            void apply() const { this->parent->skip(1); }
 
         private:
-            char our_value{};
-            SourceBuffer *parent{};
+            char          our_value{};
+            SourceBuffer* parent{};
 
             friend class SourceBuffer;
 
-
-            Peak(const char value, SourceBuffer *source_buffer) : our_value(value), parent(source_buffer) {
-            }
+            Peak(const char value, SourceBuffer* source_buffer)
+                : our_value(value), parent(source_buffer) {}
         };
 
     public:
-        explicit SourceBuffer(std::string &&source) : string_source(std::move(source)) {
-        }
+        explicit SourceBuffer(std::string&& source) : string_source(std::move(source)) {}
 
         /**
          * Checks if the next bytes are equal to the next value
@@ -56,13 +49,17 @@ namespace molar_impl {
         std::optional<size_t> caseless_next(std::string_view next);
 
         [[nodiscard]] RollbackPoint get_rollback_point() const { return this->current_pos; }
-        void apply_rollback_point(const RollbackPoint rollback_point) { this->current_pos = rollback_point; }
+        void                        apply_rollback_point(const RollbackPoint rollback_point) {
+            this->current_pos = rollback_point;
+        }
 
         char next_char();
 
         Peak peak_char();
 
-        [[nodiscard]] bool has_any() const { return this->current_pos < this->string_source.size(); }
+        [[nodiscard]] bool has_any() const {
+            return this->current_pos < this->string_source.size();
+        }
 
         void skip(size_t i);
 
@@ -75,49 +72,41 @@ namespace molar_impl {
 
     private:
         std::string string_source{};
-        size_t current_pos{};
+        size_t      current_pos{};
     };
 
-    template<typename Container>
-    class SpanBuffer {
+    template <typename Container> class SpanBuffer {
     public:
-        using value_type = typename Container::value_type;
-        using view = std::span<value_type>;
-        using const_view = std::span<const value_type>;
+        using value_type    = typename Container::value_type;
+        using view          = std::span<value_type>;
+        using const_view    = std::span<const value_type>;
         using RollbackPoint = size_t;
-
 
         class Peak {
         public:
             Peak() = default;
 
             // NOLINTNEXTLINE
-            operator value_type() const {
-                return our_value;
-            }
+            operator value_type() const { return our_value; }
 
             // value_type value() {
             //     return this->our_value;
             // }
 
-            void apply() const {
-                this->parent->skip(1);
-            }
+            void apply() const { this->parent->skip(1); }
 
         private:
-            value_type our_value{};
-            SpanBuffer *parent{};
+            value_type  our_value{};
+            SpanBuffer* parent{};
 
             friend class SpanBuffer;
 
-
-            Peak(const value_type &value, SpanBuffer *source_buffer) : our_value(value), parent(source_buffer) {
-            }
+            Peak(const value_type& value, SpanBuffer* source_buffer)
+                : our_value(value), parent(source_buffer) {}
         };
 
     public:
-        explicit SpanBuffer(Container &&source) : container_source(std::move(source)) {
-        }
+        explicit SpanBuffer(Container&& source) : container_source(std::move(source)) {}
 
         std::optional<size_t> next(view next) {
             try {
@@ -127,25 +116,25 @@ namespace molar_impl {
             }
 
             if (std::ranges::starts_with(this->get_view(), next)) {
-                const auto current_index = this->current_pos;
-                this->current_pos += next.size();
+                const auto current_index  = this->current_pos;
+                this->current_pos        += next.size();
                 return current_index;
             }
 
             return std::nullopt;
         }
 
-        std::optional<size_t> next(value_type next) {
-            return this->next(view{&next, 1});
-        }
+        std::optional<size_t> next(value_type next) { return this->next(view{&next, 1}); }
 
         [[nodiscard]] RollbackPoint get_rollback_point() const { return this->current_pos; }
-        void apply_rollback_point(const RollbackPoint rollback_point) { this->current_pos = rollback_point; }
+        void                        apply_rollback_point(const RollbackPoint rollback_point) {
+            this->current_pos = rollback_point;
+        }
 
         value_type next_value() {
             this->bounds_check(1);
-            const value_type value = this->get_view()[0];
-            this->current_pos += 1;
+            const value_type value  = this->get_view()[0];
+            this->current_pos      += 1;
             return value;
         }
 
@@ -158,10 +147,10 @@ namespace molar_impl {
             return this->slice_from_source(index.value(), 1)[0];
         }
 
-        template<std::ranges::input_range Range>
+        template <std::ranges::input_range Range>
             requires std::same_as<std::ranges::range_value_t<Range>, value_type>
-        std::optional<value_type> next_value(Range &&next) {
-            for (auto &&value: next) {
+        std::optional<value_type> next_value(Range&& next) {
+            for (auto&& value : next) {
                 if (auto result = this->next_value(std::move(value)); result) {
                     return std::move(*result);
                 }
@@ -169,11 +158,10 @@ namespace molar_impl {
             return std::nullopt;
         }
 
-
         Peak peek_value() {
             return Peak{
                 [&] {
-                    const auto value = this->next_value();
+                    const auto value   = this->next_value();
                     this->current_pos -= 1;
                     return value;
                 }(),
@@ -187,7 +175,8 @@ namespace molar_impl {
 
         void skip(const intptr_t i) {
             this->bounds_check(i);
-            this->current_pos = static_cast<size_t>(static_cast<intptr_t>(this->current_pos) + i);
+            this->current_pos =
+                static_cast<size_t>(static_cast<intptr_t>(this->current_pos) + i);
         }
 
         view slice_from_source(const size_t start, const size_t length) {
@@ -208,8 +197,8 @@ namespace molar_impl {
 
     private:
         Container container_source{};
-        size_t current_pos{};
+        size_t    current_pos{};
     };
-} // molar_impl
+} // namespace molar_impl
 
-#endif //SOURCE_BUFFER_HPP
+#endif // SOURCE_BUFFER_HPP

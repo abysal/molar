@@ -10,12 +10,11 @@
 namespace molar {
     class MolangSyntaxError : public std::runtime_error {
     public:
-        explicit MolangSyntaxError(const std::string &_Message, const size_t position) : runtime_error(
-                std::format("{}. At {}", _Message, position)), position(position) {
-        }
+        explicit MolangSyntaxError(const std::string& _Message, const size_t position)
+            : runtime_error(std::format("{}. At {}", _Message, position)), position(position) {}
 
     private:
         size_t position;
     };
-}
-#endif //MOLANG_ERROR_HPP
+} // namespace molar
+#endif // MOLANG_ERROR_HPP

@@ -11,51 +11,51 @@
 namespace molar::ast {
     class BoolLiteral final : public Expression, public VariableManager<bool> {
     public:
-        BoolLiteral(const Token &token, const molar_impl::SourceBuffer &buffer);
+        BoolLiteral(const Token& token, const molar_impl::SourceBuffer& buffer);
 
         ~BoolLiteral() override = default;
 
-        void print(std::ostream &out, const uint32_t index) override;
+        void print(std::ostream& out, const uint32_t index) override;
 
-        void visit_node(class AstVisitor &visitor) override;
+        void visit_node(class AstVisitor& visitor) override;
     };
 
     class StringLiteral final : public Expression, public VariableManager<std::string> {
     public:
-        StringLiteral(const Token &token, const molar_impl::SourceBuffer &buffer);
+        StringLiteral(const Token& token, const molar_impl::SourceBuffer& buffer);
 
         ~StringLiteral() override = default;
 
-        void print(std::ostream &out, const uint32_t index) override;
+        void print(std::ostream& out, const uint32_t index) override;
 
-        void visit_node(class AstVisitor &visitor) override;
+        void visit_node(class AstVisitor& visitor) override;
     };
 
     class NumericLiteral final : public Expression, public VariableManager<float> {
     public:
-        NumericLiteral(const Token &token, const molar_impl::SourceBuffer &buffer);
+        NumericLiteral(const Token& token, const molar_impl::SourceBuffer& buffer);
 
         ~NumericLiteral() override = default;
 
-        void print(std::ostream &out, const uint32_t index) override;
+        void print(std::ostream& out, const uint32_t index) override;
 
-        void visit_node(class AstVisitor &visitor) override;
+        void visit_node(class AstVisitor& visitor) override;
     };
 
     class IdentifierLiteral : public Expression, public VariableManager<std::string> {
     public:
-        IdentifierLiteral(const Token &token, const molar_impl::SourceBuffer &buffer);
+        IdentifierLiteral(const Token& token, const molar_impl::SourceBuffer& buffer);
 
-        IdentifierLiteral(IdentifierLiteral &&) noexcept = default;
+        IdentifierLiteral(IdentifierLiteral&&) noexcept = default;
 
-        IdentifierLiteral &operator=(IdentifierLiteral &&) noexcept = default;
+        IdentifierLiteral& operator=(IdentifierLiteral&&) noexcept = default;
 
         IdentifierLiteral() = default;
 
-        void print(std::ostream &out, const uint32_t index) override;
+        void print(std::ostream& out, const uint32_t index) override;
 
-        void visit_node(class AstVisitor &visitor) override;
+        void visit_node(class AstVisitor& visitor) override;
     };
-}
+} // namespace molar::ast
 
-#endif //LITERAL_HPP
+#endif // LITERAL_HPP
